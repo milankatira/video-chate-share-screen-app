@@ -26,6 +26,8 @@ function App() {
   const myVideo = useRef();
   const userVideo = useRef();
   const connectionRef = useRef();
+  // Inside your component
+  const screenShareVideo = useRef(); // Create a ref for the shared screen video element
 
   useEffect(() => {
     navigator.mediaDevices
@@ -38,9 +40,10 @@ function App() {
     if (screen) {
       if (navigator.mediaDevices.getDisplayMedia) {
         navigator.mediaDevices
-          // eslint-disable-next-line object-shorthand
           .getDisplayMedia({ video: video, audio: audio })
-          // eslint-disable-next-line no-console
+          .then((screenStream) => {
+            screenShareVideo.current.srcObject = screenStream; // Set the screen share stream to the video element
+          })
           .catch((e) => console.log(e));
       }
     }
@@ -55,7 +58,31 @@ function App() {
       setName(data.name);
       setCallerSignal(data.signal);
     });
-  }, [video, audio,screen]);
+  }, [video, audio, screen]);
+
+
+  // useEffect(() => {
+  //   navigator.mediaDevices
+  //     .getUserMedia({ video: video, audio: audio })
+  //     .then((stream) => {
+  //       setStream(stream);
+  //       myVideo.current.srcObject = stream;
+  //     });
+
+  //   if (screen) {
+  //     if (navigator.mediaDevices.getDisplayMedia) {
+  //       navigator.mediaDevices
+  //         .getDisplayMedia({ video: video, audio: audio })
+  //         .then((screenStream) => {
+  //           // Handle screen sharing stream here
+  //           // You can add logic to display the screen stream on the UI
+  //         })
+  //         .catch((e) => console.log(e));
+  //     }
+  //   }
+
+  //   // ... rest of your code
+  // }, [video, audio, screen]);
 
   const callUser = (id) => {
     const peer = new Peer({
@@ -110,6 +137,17 @@ function App() {
       <h1 style={{ textAlign: "center", color: "#fff" }}>Zoomish</h1>
       <div className="container">
         <div className="video-container">
+          <div className="video">
+            {screen && (
+              <video
+                playsInline
+                muted
+                ref={screenShareVideo}
+                autoPlay
+                style={{ width: "300px" }}
+              />
+            )}
+          </div>
           <div className="video">
             {stream && (
               <video
